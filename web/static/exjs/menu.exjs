@@ -1,0 +1,59 @@
+defmodule Menu do
+  def create(game) do
+    init()
+
+    game.stage.setBackgroundColor(0xcdcdcd);
+
+
+    x = game.world.centerX
+
+    text1 = text_with_shadow(game, x, 200, "Hello", style)
+    text2 = text_with_shadow(game, x, 300, "From", style)
+    text3 = text_with_shadow(game, x, 400, "Elixirscript", style)
+
+    add_sprite(text1)
+    add_sprite(text2)
+    add_sprite(text3)
+
+    game.world.add(text1)
+    game.world.add(text2)
+    game.world.add(text3)
+  end
+
+  def update(game) do
+    Elixir.Enum.each(sprites, fn(sprite) ->
+      JS.update(sprite, %{ "rotation" => sprite.rotation + 0.01 })
+    end)
+  end
+
+  defp init() do
+    Elixir.Agent.start(fn -> %{ "sprites" => [] } end, [name: __MODULE__])
+  end
+
+  defp style() do
+    %{
+      "font" => "65px Arial Black",
+      "fill" => "#eeba30",
+      "align" => "center",
+      "stroke" => "#740001",
+      "strokeThickness" => 16
+    }
+  end
+
+  defp sprites() do
+    Elixir.Agent.get(__MODULE__, fn(x) -> x.sprites end)
+  end
+
+  defp add_sprite(sprite) do
+    Elixir.Agent.update(__MODULE__, fn
+      (x) -> %{ x | "sprites" => x.sprites ++ [sprite] }
+    end)
+  end
+
+  defp text_with_shadow(game, x, y, text, style) do
+    text1 = JS.new Phaser.Text, [game, x, y, text, style]
+    text1.setShadow(2, 2, "#000000", 2, true, true)
+    text1.anchor.setTo(0.5)
+    text1
+  end
+end
